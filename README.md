@@ -10,4 +10,6 @@ Reine statische Seite, nur Beispieldaten, Änderungen bleiben im Browser (localS
 
 Dateien: `site/index.html` (die komplette App), `site/logo.png`.
 Veröffentlichung über GitHub Pages (`.github/workflows/pages.yml`).
+Hintergrund, Entscheidungen und offene Punkte: siehe [NOTIZEN.md](NOTIZEN.md).
+Live: https://aozcorap.github.io/junited-autoglas/
 Lokal testen: `site/index.html` im Browser öffnen.
