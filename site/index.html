@@ -447,6 +447,7 @@ function mineView(){
 /* ---- Kalender ---- */
 function weekStart(off){const d=today0();const w=(d.getDay()+6)%7;d.setDate(d.getDate()-w+off*7);return d}
 function calView(){
+  const boss=state.role==='boss';
   const ws=weekStart(state.week), days=[];
   for(let i=0;i<6;i++){const d=new Date(ws);d.setDate(d.getDate()+i);days.push(d)}
   const end=days[5];
@@ -458,15 +459,15 @@ function calView(){
     +'<div class="week">';
   days.forEach(d=>{
     const s=iso(d), n=dayDiff(s);
-    const items=state.appts.filter(a=>a.date===s).sort(byTime);
+    // Mitarbeiter sehen nur offene Termine (nicht besetzt, nicht erledigt, nicht schon ihre eigenen)
+    const items=state.appts.filter(a=>a.date===s&&(boss||(!a.done&&a.assigned.length<a.persons&&!a.assigned.includes(state.role)))).sort(byTime);
     h+='<div class="col'+(n===0?' today':'')+(n<0?' past':'')+'"><div class="col-h">'+WD[d.getDay()]+'<span>'+pad(d.getDate())+'.'+pad(d.getMonth()+1)+'.'+(n===0?' · heute':'')+'</span></div>'
-      +(items.length?items.map(a=>apptCard(a,'col')).join(''):'<div class="empty">Keine Termine</div>')+'</div>';
+      +(items.length?items.map(a=>apptCard(a,'col')).join(''):'<div class="empty">'+(boss?'Keine Termine':'Keine offenen Termine')+'</div>')+'</div>';
   });
   h+='</div><div class="legend">'
     +'<span><i style="background:var(--s-red)"></i>Dringend: in ≤ 2 Tagen, nicht besetzt</span>'
     +'<span><i style="background:var(--s-yellow)"></i>Offen</span>'
-    +'<span><i style="background:var(--s-green)"></i>Besetzt</span>'
-    +'<span><i style="background:var(--s-grey)"></i>Erledigt</span></div>';
+    +(boss?'<span><i style="background:var(--s-green)"></i>Besetzt</span><span><i style="background:var(--s-grey)"></i>Erledigt</span>':'')+'</div>';
   return h;
 }
 
