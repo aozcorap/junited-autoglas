@@ -38,7 +38,7 @@ Stand: 12.11.2026. Diese Datei hält Hintergrund, Entscheidungen und Ergebnis fe
 - Veröffentlichung über **GitHub Pages** mit dem Workflow `.github/workflows/pages.yml` (Pages-Source: "GitHub Actions"). Deploy läuft bei jedem Push auf `main`.
 - URL (Demo): https://aozcorap.github.io/junited-autoglas/
 - Arbeitsweise: Änderungen auf Branch `claude/focused-albattani-ly4pma`, dann Pull Request nach `main` (Squash-Merge). Nach einem Merge den Branch wieder von `main` neu aufsetzen.
-- Bekannt: Der Workflow läuft auch auf dem Entwicklungsbranch und schlägt dort rot fehl, weil Pages nur von `main` deployt. Harmlos, lässt sich entfernen, indem der Branch aus `on.push.branches` gestrichen wird.
+- Der Workflow läuft nur bei Push auf `main` (nicht auf Entwicklungsbranches), damit es keine Fehlermails gibt.
 
 ## Grenzen der Demo / offene Punkte für ein echtes System
 - **Fahrzeugschein → 1 oder 2 Personen:** Der Fahrzeugschein enthält diese Info nicht. Es braucht eine gepflegte Zuordnung (Modell/Typschlüssel → Personenzahl). Größtes fachliches Risiko. Ob Wetzlar so eine Liste hat, ist unbekannt.
