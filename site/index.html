@@ -67,6 +67,7 @@ nav.tabs button.on{background:var(--navy);color:#fff}
 .kpi.ok{border-left-color:var(--s-green)} .kpi.ok .n{color:var(--s-green)}
 .kpi.done{border-left-color:var(--s-grey)} .kpi.done .n{color:var(--s-grey)}
 .kpi.on{outline:2px solid var(--navy)}
+.card[id]{scroll-margin-top:84px}
 .cols{grid-template-columns:minmax(0,1fr) minmax(0,1.5fr);align-items:start}
 
 /* Auslastung */
@@ -286,7 +287,7 @@ function init(){
   if(!state||state.v!==1||state.day!==iso(today0())) state=fresh(42,true);
   save();
 }
-const ui={modal:null};
+const ui={modal:null,jump:false};
 
 /* ============ Logik ============ */
 function status(a){
@@ -356,6 +357,7 @@ function render(){
     +(state.tab==='dash'?dashView():state.tab==='mine'?mineView():calView())
     +'</div>'+demoBar();
   if(ui.modal) openDlg(ui.modal); else closeDlg();
+  if(ui.jump){ui.jump=false;const el=$('#termine');if(el)el.scrollIntoView({behavior:'smooth',block:'start'})}
 }
 function demoBar(){
   return '<div class="demobar"><div class="wrap"><small>Demo mit Beispieldaten. Änderungen bleiben nur in diesem Browser.</small>'
@@ -375,7 +377,7 @@ function dashView(){
   const A=state.appts, cnt={red:0,yellow:0,ok:0,done:0};
   A.forEach(a=>cnt[status(a)]++);
   const f=state.filter;
-  const kp=(k,l)=>'<button class="kpi '+k+(f===k?' on':'')+'" data-filter="'+k+'"><div class="n">'+cnt[k]+'</div><div class="l">'+l+'</div></button>';
+  const kp=(k,l)=>'<button class="kpi '+k+(f===k?' on':'')+'" data-filter="'+k+'" data-jump="1"><div class="n">'+cnt[k]+'</div><div class="l">'+l+'</div></button>';
   const list=A.filter(a=>f==='all'?status(a)!=='done':status(a)===f).sort(byTime);
   const fl=[['all','Alle offenen'],['red','Dringend'],['yellow','Offen'],['ok','Besetzt'],['done','Erledigt']];
   let rows='',lastDay='';
@@ -384,7 +386,7 @@ function dashView(){
   return '<div class="grid kpis">'+kp('red','Dringend (≤ 2 Tage, nicht besetzt)')+kp('yellow','Offen (noch keine volle Zusage)')+kp('ok','Besetzt')+kp('done','Erledigt')+'</div>'
    +'<div class="grid cols" style="margin-top:14px">'
    +'<section class="card"><h2>Auslastung &amp; Einsatzorte</h2>'+loadView()+'</section>'
-   +'<section class="card"><h2>Termine</h2><div class="filters">'+fl.map(x=>'<button class="chip-f'+(f===x[0]?' on':'')+'" data-filter="'+x[0]+'">'+x[1]+'</button>').join('')+'</div>'+rows+'</section>'
+   +'<section class="card" id="termine"><h2>Termine</h2><div class="filters">'+fl.map(x=>'<button class="chip-f'+(f===x[0]?' on':'')+'" data-filter="'+x[0]+'">'+x[1]+'</button>').join('')+'</div>'+rows+'</section>'
    +'</div>';
 }
 function bossRow(a){
@@ -510,7 +512,7 @@ document.addEventListener('click',e=>{
   if('role' in ds){state.role=ds.role;state.tab=null;save();render();window.scrollTo(0,0)}
   else if('logout' in ds){state.role=null;ui.modal=null;save();render()}
   else if('tab' in ds){state.tab=ds.tab;save();render()}
-  else if('filter' in ds){state.filter=ds.filter;save();render()}
+  else if('filter' in ds){state.filter=ds.filter;if('jump' in ds)ui.jump=true;save();render()}
   else if('week' in ds){const v=+ds.week;state.week=v===0?0:Math.max(0,Math.min(maxWeek(),state.week+v));save();render()}
   else if('take' in ds){ui.modal=null;act_take(+ds.take,state.role);toast('Termin übernommen. Du findest ihn unter „Meine Termine“.')}
   else if('releaseEmp' in ds){const [id,emp]=ds.releaseEmp.split(':');act_release(+id,emp)}
