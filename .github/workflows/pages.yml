@@ -1,7 +1,7 @@
 name: Demo veröffentlichen (GitHub Pages)
 on:
   push:
-    branches: [main, claude/focused-albattani-ly4pma]
+    branches: [main]
   workflow_dispatch:
 permissions:
   contents: read
