@@ -446,6 +446,8 @@ function mineView(){
 
 /* ---- Kalender ---- */
 function weekStart(off){const d=today0();const w=(d.getDay()+6)%7;d.setDate(d.getDate()-w+off*7);return d}
+// Letzte Woche, in der noch ein Termin liegt (damit kein Termin unerreichbar ist)
+function maxWeek(){const w0=weekStart(0);let m=0;state.appts.forEach(a=>{const w=Math.floor((parseIso(a.date)-w0)/(7*864e5));if(w>m)m=w});return m}
 function calView(){
   const boss=state.role==='boss';
   const ws=weekStart(state.week), days=[];
@@ -455,7 +457,7 @@ function calView(){
   let h='<div class="cal-nav"><button class="btn small" data-week="-1"'+(state.week<=0?' disabled':'')+'>‹ Zurück</button>'
     +'<h2>'+title+'</h2>'
     +'<button class="btn small" data-week="0">Heute</button>'
-    +'<button class="btn small" data-week="1"'+(state.week>=2?' disabled':'')+'>Weiter ›</button></div>'
+    +'<button class="btn small" data-week="1"'+(state.week>=maxWeek()?' disabled':'')+'>Weiter ›</button></div>'
     +'<div class="week">';
   days.forEach(d=>{
     const s=iso(d), n=dayDiff(s);
@@ -509,7 +511,7 @@ document.addEventListener('click',e=>{
   else if('logout' in ds){state.role=null;ui.modal=null;save();render()}
   else if('tab' in ds){state.tab=ds.tab;save();render()}
   else if('filter' in ds){state.filter=ds.filter;save();render()}
-  else if('week' in ds){const v=+ds.week;state.week=v===0?0:Math.max(0,Math.min(2,state.week+v));save();render()}
+  else if('week' in ds){const v=+ds.week;state.week=v===0?0:Math.max(0,Math.min(maxWeek(),state.week+v));save();render()}
   else if('take' in ds){ui.modal=null;act_take(+ds.take,state.role);toast('Termin übernommen. Du findest ihn unter „Meine Termine“.')}
   else if('releaseEmp' in ds){const [id,emp]=ds.releaseEmp.split(':');act_release(+id,emp)}
   else if('release' in ds){ui.modal=null;act_release(+ds.release,state.role);toast('Zusage zurückgezogen.')}
