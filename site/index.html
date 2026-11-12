@@ -1,0 +1,536 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Einsatzplanung Demo</title>
+<meta name="color-scheme" content="light">
+<style>
+:root{
+  --red:#c8102e; --navy:#0b2a5b; --navy-2:#16407f;
+  --bg:#f3f5f9; --card:#fff; --line:#dfe4ec; --text:#1b2433; --muted:#5f6b7e;
+  --s-red:#d62839; --s-yellow:#f0a30a; --s-green:#2a9d5c; --s-grey:#8b95a5;
+  --s-red-bg:#fdecee; --s-yellow-bg:#fff6e0; --s-green-bg:#e8f6ee; --s-grey-bg:#eef0f4;
+  --radius:12px;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;padding-bottom:84px}
+button,select{font:inherit;color:inherit}
+button{cursor:pointer}
+.wrap{max-width:1180px;margin:0 auto;padding:0 16px}
+
+/* Header */
+header.top{background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20}
+header.top .wrap{display:flex;align-items:center;gap:12px;min-height:60px;flex-wrap:wrap;padding-top:8px;padding-bottom:8px}
+header.top img{height:30px;width:auto;display:block}
+.demo-tag{font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--red);border:1px solid var(--red);border-radius:99px;padding:2px 8px}
+.spacer{flex:1}
+.who{display:flex;align-items:center;gap:8px;font-size:15px}
+.who b{color:var(--navy)}
+.btn{border:1px solid var(--line);background:#fff;border-radius:10px;padding:8px 14px;font-weight:600;min-height:40px}
+.btn:hover{border-color:var(--navy-2)}
+.btn.primary{background:var(--navy);border-color:var(--navy);color:#fff}
+.btn.primary:hover{background:var(--navy-2)}
+.btn.danger{color:var(--s-red);border-color:#f1c2c7}
+.btn.small{padding:5px 10px;min-height:32px;font-size:14px}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+
+/* Tabs */
+nav.tabs{display:flex;gap:6px;margin:16px 0 14px;overflow-x:auto}
+nav.tabs button{border:0;background:transparent;padding:10px 16px;border-radius:10px;font-weight:600;color:var(--muted);white-space:nowrap;min-height:44px}
+nav.tabs button.on{background:var(--navy);color:#fff}
+
+/* Login */
+.login{max-width:720px;margin:36px auto 0;text-align:center}
+.login img{height:44px;max-width:100%}
+.login h1{margin:18px 0 6px;font-size:26px;color:var(--navy)}
+.login p{color:var(--muted);margin:0 0 22px}
+.roles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:10px}
+.role{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:18px 10px;font-weight:700;color:var(--navy);min-height:84px}
+.role small{display:block;font-weight:500;color:var(--muted);margin-top:4px}
+.role:hover{border-color:var(--navy-2);box-shadow:0 2px 10px rgba(11,42,91,.12)}
+.role.boss{background:var(--navy);color:#fff;border-color:var(--navy)}
+.role.boss small{color:#c9d5ec}
+.login h3{margin:26px 0 4px;font-size:14px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+
+/* Cards */
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px}
+.card h2{margin:0 0 12px;font-size:18px;color:var(--navy)}
+.grid{display:grid;gap:14px}
+.kpis{grid-template-columns:repeat(4,1fr)}
+.kpi{border-radius:var(--radius);padding:14px;border:1px solid transparent;text-align:left;background:#fff;border-color:var(--line);border-left-width:6px}
+.kpi .n{font-size:30px;font-weight:800;line-height:1.1}
+.kpi .l{font-size:14px;color:var(--muted)}
+.kpi.red{border-left-color:var(--s-red)} .kpi.red .n{color:var(--s-red)}
+.kpi.yellow{border-left-color:var(--s-yellow)} .kpi.yellow .n{color:#b97a00}
+.kpi.ok{border-left-color:var(--s-green)} .kpi.ok .n{color:var(--s-green)}
+.kpi.done{border-left-color:var(--s-grey)} .kpi.done .n{color:var(--s-grey)}
+.kpi.on{outline:2px solid var(--navy)}
+.cols{grid-template-columns:minmax(0,1fr) minmax(0,1.5fr);align-items:start}
+
+/* Auslastung */
+.emp{padding:10px 0;border-top:1px solid var(--line)}
+.emp:first-of-type{border-top:0}
+.emp-h{display:flex;justify-content:space-between;gap:8px;font-weight:700}
+.emp-h span{font-weight:500;color:var(--muted);font-size:14px}
+.bar{height:8px;background:var(--s-grey-bg);border-radius:99px;margin:6px 0;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--navy-2);border-radius:99px}
+.emp-now{font-size:14px;color:var(--muted)}
+.emp-now b{color:var(--text)}
+
+/* Termin-Liste */
+.filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.chip-f{border:1px solid var(--line);background:#fff;border-radius:99px;padding:5px 12px;font-size:14px;font-weight:600;color:var(--muted)}
+.chip-f.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+.day-h{margin:16px 0 6px;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+.day-h:first-child{margin-top:0}
+.appt{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;background:#fff;border:1px solid var(--line);border-left:6px solid var(--s-grey);border-radius:10px;padding:10px 12px;margin-bottom:8px;cursor:pointer;text-align:left;width:100%}
+.appt:hover{box-shadow:0 2px 10px rgba(11,42,91,.1)}
+.appt.red{border-left-color:var(--s-red);background:var(--s-red-bg)}
+.appt.yellow{border-left-color:var(--s-yellow);background:var(--s-yellow-bg)}
+.appt.ok{border-left-color:var(--s-green)}
+.appt.done{border-left-color:var(--s-grey);background:var(--s-grey-bg);opacity:.85}
+.appt.mine{box-shadow:0 0 0 2px var(--navy-2)}
+.a-time{font-weight:800;color:var(--navy);min-width:48px}
+.a-main{min-width:0}
+.a-title{font-weight:700}
+.a-sub{font-size:14px;color:var(--muted)}
+.a-meta{grid-column:1 / -1;display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:2px}
+.tag{font-size:12.5px;font-weight:600;border-radius:99px;padding:2px 9px;background:var(--s-grey-bg);color:var(--text);white-space:nowrap}
+.tag.site{background:#e6eefb;color:var(--navy-2)}
+.tag.shop{background:#f1e8fb;color:#6a35a0}
+.tag.two{background:#fde8d5;color:#a24c00}
+.tag.st-red{background:var(--s-red);color:#fff}
+.tag.st-yellow{background:var(--s-yellow);color:#3b2a00}
+.tag.st-ok{background:var(--s-green);color:#fff}
+.tag.st-done{background:var(--s-grey);color:#fff}
+.tag.who{background:#fff;border:1px solid var(--line);padding:1px 8px}
+.row-ctl{grid-column:1 / -1;display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:6px}
+select{border:1px solid var(--line);border-radius:8px;padding:6px 8px;background:#fff;min-height:36px;max-width:100%}
+.x{border:0;background:transparent;color:var(--s-red);font-weight:800;padding:0 4px;min-height:0}
+
+/* Kalender */
+.cal-nav{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.cal-nav h2{margin:0;flex:1;font-size:18px;color:var(--navy);min-width:160px}
+.week{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;align-items:start}
+.col{background:#eaeef5;border-radius:10px;padding:8px;min-height:120px}
+.col.today{background:#dde8fb}
+.col.past{opacity:.55}
+.col-h{font-weight:700;font-size:14px;color:var(--navy);margin-bottom:6px;display:flex;justify-content:space-between}
+.col-h span{font-weight:500;color:var(--muted)}
+.col .appt{padding:8px;margin-bottom:6px;font-size:14px;gap:2px 8px;grid-template-columns:1fr}
+.col .a-sub{font-size:12.5px}
+.col .tag{font-size:11.5px;padding:1px 7px}
+.empty{color:var(--muted);font-size:13px;text-align:center;padding:14px 4px}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--muted);margin-top:12px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+
+/* Mitarbeiter-Liste */
+.todo{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;background:#fff;border:1px solid var(--line);border-left:6px solid var(--s-green);border-radius:10px;padding:12px;margin-bottom:10px}
+.todo.done{border-left-color:var(--s-grey);background:var(--s-grey-bg)}
+.todo.warn{border-left-color:var(--s-yellow)}
+.todo .a-title{font-size:17px}
+.todo a{color:var(--navy-2);font-weight:600}
+.check{display:flex;align-items:center;gap:8px;font-weight:600;cursor:pointer;min-height:40px}
+.check input{width:22px;height:22px;accent-color:var(--s-green)}
+.hint{background:#fff;border:1px dashed var(--line);border-radius:var(--radius);padding:18px;text-align:center;color:var(--muted)}
+.banner{background:#e6eefb;border:1px solid #c6d6f2;border-radius:var(--radius);padding:12px 14px;margin-bottom:14px;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+
+/* Modal */
+dialog{border:0;border-radius:16px;padding:0;max-width:520px;width:calc(100% - 24px);box-shadow:0 12px 48px rgba(0,0,0,.28)}
+dialog::backdrop{background:rgba(10,20,40,.5)}
+.m{padding:18px}
+.m h3{margin:0 0 4px;font-size:20px;color:var(--navy)}
+.m dl{display:grid;grid-template-columns:110px 1fr;gap:6px 10px;margin:14px 0}
+.m dt{color:var(--muted);font-size:14px}
+.m dd{margin:0;font-weight:600}
+.m .ctl{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:12px}
+.m-close{float:right}
+.warnbox{background:var(--s-yellow-bg);border:1px solid #f3d98f;border-radius:10px;padding:8px 10px;font-size:14px;margin-top:8px}
+.warnbox.red{background:var(--s-red-bg);border-color:#f1c2c7}
+
+/* Demo-Leiste */
+.demobar{position:fixed;left:0;right:0;bottom:0;background:var(--navy);color:#fff;z-index:30;padding:10px 0}
+.demobar .wrap{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.demobar small{color:#c9d5ec;flex:1;min-width:180px}
+.demobar .btn{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.3);color:#fff}
+.demobar .btn:hover{background:rgba(255,255,255,.22)}
+
+.toast{position:fixed;left:50%;bottom:92px;transform:translateX(-50%);background:#1b2433;color:#fff;border-radius:10px;padding:10px 16px;z-index:40;font-size:15px;max-width:calc(100% - 24px)}
+
+@media (max-width:980px){
+  .kpis{grid-template-columns:repeat(2,1fr)}
+  .cols{grid-template-columns:1fr}
+  .week{grid-template-columns:1fr}
+  .col{min-height:0}
+  .col.past{display:none}
+  .col .appt{font-size:16px}
+}
+@media (max-width:520px){
+  header.top img{height:24px}
+  .demo-tag{display:none}
+  .m dl{grid-template-columns:90px 1fr}
+  .demobar small{display:none}
+  .demobar .btn{flex:1}
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<dialog id="dlg"></dialog>
+<div id="toast" class="toast" hidden></div>
+
+<script>
+/* ============ Stammdaten (alles Beispieldaten) ============ */
+const EMP = [
+  {id:'e1', name:'Marco'}, {id:'e2', name:'Jonas'}, {id:'e3', name:'Sabine'},
+  {id:'e4', name:'Tim'},   {id:'e5', name:'Lena'}
+];
+// p = benötigte Personen für den Scheibenwechsel (Demo-Regel je Fahrzeugtyp)
+const VEHICLES = [
+  {n:'VW Golf',p:1},{n:'Opel Corsa',p:1},{n:'Ford Focus',p:1},{n:'Skoda Octavia',p:1},
+  {n:'Renault Clio',p:1},{n:'Toyota Yaris',p:1},{n:'Seat Ibiza',p:1},{n:'Hyundai i20',p:1},
+  {n:'Tesla Model Y',p:2},{n:'Tesla Model 3',p:2},{n:'BMW X5',p:2},
+  {n:'Mercedes Sprinter',p:2},{n:'VW Transporter',p:2},{n:'Audi Q7',p:2}
+];
+const SERVICES = ['Windschutzscheibe tauschen','Windschutzscheibe tauschen','Steinschlag-Reparatur','Heckscheibe tauschen','Seitenscheibe tauschen'];
+const FIRST = ['Anna','Thomas','Petra','Michael','Sandra','Jürgen','Katrin','Stefan','Monika','Daniel','Claudia','Frank','Nicole','Ralf','Heike','Markus'];
+const LAST = ['Müller','Schmidt','Becker','Weber','Hofmann','Schneider','Koch','Wagner','Klein','Schröder','Neumann','Braun','Zimmermann','Krüger','Lang','Peters'];
+const STREETS = ['Gartenstraße','Hauptstraße','Bahnhofstraße','Lindenweg','Am Mühlberg','Schulstraße','Bergstraße','Wiesenweg','Goethestraße','Kirchgasse'];
+const CITIES = [['Wetzlar','35576'],['Wetzlar','35578'],['Aßlar','35614'],['Braunfels','35619'],['Solms','35606'],['Leun','35638'],['Ehringshausen','35630'],['Hüttenberg','35625'],['Lahnau','35633'],['Gießen','35390']];
+const SLOTS = ['08:00','10:30','13:00','15:30'];
+const DUR = 150; // Minuten Block pro Termin
+const DAYS_AHEAD = 20;
+
+/* ============ Hilfsfunktionen ============ */
+function rng(seed){let a=seed>>>0;return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const pick=(r,arr)=>arr[Math.floor(r()*arr.length)];
+const pad=n=>String(n).padStart(2,'0');
+const iso=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+const today0=()=>{const d=new Date();d.setHours(0,0,0,0);return d};
+const parseIso=s=>{const [y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d)};
+const dayDiff=s=>Math.round((parseIso(s)-today0())/864e5);
+const mins=t=>{const [h,m]=t.split(':').map(Number);return h*60+m};
+const WD=['So','Mo','Di','Mi','Do','Fr','Sa'];
+const WDL=['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];
+const fmtShort=s=>{const d=parseIso(s);return WD[d.getDay()]+', '+pad(d.getDate())+'.'+pad(d.getMonth()+1)+'.'};
+const fmtLong=s=>{const n=dayDiff(s);const d=parseIso(s);const base=WDL[d.getDay()]+', '+pad(d.getDate())+'.'+pad(d.getMonth()+1)+'.';return n===0?'Heute · '+base:n===1?'Morgen · '+base:base};
+const empName=id=>(EMP.find(e=>e.id===id)||{name:'?'}).name;
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+/* ============ Termine erzeugen ============ */
+function generate(seed, prefill){
+  const r=rng(seed), out=[]; let id=1;
+  const base=today0();
+  for(let i=0;i<=DAYS_AHEAD;i++){
+    const d=new Date(base); d.setDate(d.getDate()+i);
+    if(d.getDay()===0) continue; // Sonntag frei
+    let slots=[...SLOTS].sort(()=>r()-.5);
+    let n = d.getDay()===6 ? (r()<.5?1:0) : (r()<.2?0 : r()<.55?1 : r()<.85?2 : 3);
+    if(i===0) n=Math.max(n,2);
+    if(i===1) n=Math.max(n,2);
+    slots=slots.slice(0,n).sort();
+    if(i===0 && !slots.includes('08:00')) slots[0]='08:00';
+    slots=[...new Set(slots)].sort();
+    for(const t of slots){
+      const v=pick(r,VEHICLES), c=pick(r,CITIES), shop=r()<.3;
+      const plate='LDK-'+String.fromCharCode(65+Math.floor(r()*26))+String.fromCharCode(65+Math.floor(r()*26))+' '+(100+Math.floor(r()*900));
+      out.push({
+        id:id++, date:iso(d), time:t,
+        customer:pick(r,FIRST)+' '+pick(r,LAST),
+        type:shop?'shop':'site',
+        address:shop?'Werkstatt Wetzlar':pick(r,STREETS)+' '+(1+Math.floor(r()*60))+', '+c[1]+' '+c[0],
+        city:shop?'Werkstatt':c[0],
+        vehicle:v.n, plate, persons:v.p, service:pick(r,SERVICES),
+        assigned:[], done:false
+      });
+    }
+  }
+  if(prefill) prefillAssign(out, r);
+  return out;
+}
+function busy(list, emp, a){
+  return list.some(b=>b.id!==a.id && b.date===a.date && b.assigned.includes(emp) && Math.abs(mins(b.time)-mins(a.time))<DUR);
+}
+function prefillAssign(list, r){
+  let forcedOpen=0;
+  list.forEach((a,idx)=>{
+    const dd=dayDiff(a.date);
+    // Der erste Termin heute ist schon erledigt, die nächsten 2 Termine bleiben bewusst offen bzw. halb besetzt
+    if(idx===0&&dd===0){ fillFull(list,a,r); a.done=true; return; }
+    if(dd<=2 && forcedOpen<2){
+      forcedOpen++;
+      if(a.persons===2 && forcedOpen===2){ addOne(list,a,r); }
+      return;
+    }
+    const x=r();
+    if(x<.5) fillFull(list,a,r);
+    else if(x<.62 && a.persons===2) addOne(list,a,r);
+  });
+}
+function freeEmps(list,a){return EMP.filter(e=>!a.assigned.includes(e.id)&&!busy(list,e.id,a))}
+function addOne(list,a,r){const f=freeEmps(list,a);if(f.length)a.assigned.push(pick(r,f).id)}
+function fillFull(list,a,r){while(a.assigned.length<a.persons){const f=freeEmps(list,a);if(!f.length)break;a.assigned.push(pick(r,f).id)}}
+
+/* ============ State ============ */
+const KEY='junited-demo-v1';
+let state=null;
+const mem={};
+function load(){try{const s=localStorage.getItem(KEY);if(s)return JSON.parse(s)}catch(e){} return null}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){mem.s=JSON.stringify(state)}}
+function fresh(seed,prefill){return {v:1,seed,day:iso(today0()),appts:generate(seed,prefill),role:null,tab:null,week:0,filter:'all'}}
+function init(){
+  state=load();
+  // veraltet (anderer Tag) -> neu erzeugen, damit Datum/Ampel zu "heute" passen
+  if(!state||state.v!==1||state.day!==iso(today0())) state=fresh(42,true);
+  save();
+}
+const ui={modal:null};
+
+/* ============ Logik ============ */
+function status(a){
+  if(a.done) return 'done';
+  if(a.assigned.length>=a.persons) return 'ok';
+  return dayDiff(a.date)<=2 ? 'red' : 'yellow';
+}
+const STL={red:'Dringend',yellow:'Offen',ok:'Besetzt',done:'Erledigt'};
+function missingText(a){
+  const m=a.persons-a.assigned.length;
+  if(m<=0) return '';
+  if(a.persons===2) return a.assigned.length===0?'Es fehlen 2 Personen':'Zweite Person fehlt';
+  return 'Keine Zusage';
+}
+const byTime=(a,b)=>(a.date+a.time).localeCompare(b.date+b.time);
+const get=id=>state.appts.find(a=>a.id===id);
+
+function act_take(id,emp){const a=get(id);if(!a||a.done||a.assigned.includes(emp)||a.assigned.length>=a.persons)return;
+  if(busy(state.appts,emp,a)){toast(empName(emp)+' hat zu dieser Zeit schon einen Termin.');return}
+  a.assigned.push(emp);save();render()}
+function act_release(id,emp){const a=get(id);if(!a||a.done)return;a.assigned=a.assigned.filter(e=>e!==emp);save();render()}
+function act_done(id,val){const a=get(id);if(!a)return;if(val&&a.assigned.length<a.persons)return;a.done=!!val;save();render()}
+function act_shuffle(){state=Object.assign(fresh((Math.random()*1e9)|0,false),{role:state.role,tab:state.tab});save();ui.modal=null;render();toast('Termine neu gemischt. Alle Zusagen sind leer.')}
+function act_reset(){state=Object.assign(fresh(42,true),{role:state.role,tab:state.tab});save();ui.modal=null;render();toast('Demo zurückgesetzt.')}
+
+/* ============ Rendering ============ */
+const $=s=>document.querySelector(s);
+function toast(msg){const t=$('#toast');t.textContent=msg;t.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>t.hidden=true,2800)}
+
+function tagsFor(a){
+  const st=status(a);
+  let h='<span class="tag '+(a.type==='shop'?'shop':'site')+'">'+(a.type==='shop'?'Werkstatt':'Vor Ort')+'</span>';
+  h+='<span class="tag'+(a.persons===2?' two':'')+'">'+(a.persons===2?'👥 2 Personen':'👤 1 Person')+'</span>';
+  h+='<span class="tag st-'+st+'">'+STL[st]+'</span>';
+  return h;
+}
+function whoTags(a){
+  let h=a.assigned.map(e=>'<span class="tag who">'+esc(empName(e))+'</span>').join('');
+  const miss=missingText(a);
+  if(miss && !a.done) h+='<span class="tag who" style="border-style:dashed;color:var(--muted)">'+miss+'</span>';
+  return h;
+}
+function apptCard(a,mode){
+  const st=status(a), mine=state.role&&state.role!=='boss'&&a.assigned.includes(state.role);
+  const compact=mode==='col';
+  return '<button class="appt '+st+(mine?' mine':'')+'" data-open="'+a.id+'">'
+    +'<span class="a-time">'+a.time+'</span>'
+    +'<span class="a-main"><span class="a-title">'+esc(a.customer)+'</span><br>'
+    +'<span class="a-sub">'+esc(a.city)+' · '+esc(a.vehicle)+'</span></span>'
+    +'<span class="a-meta">'+tagsFor(a)+(compact?'':whoTags(a))+(mine?'<span class="tag" style="background:var(--navy);color:#fff">Meine</span>':'')+'</span>'
+    +(compact?'<span class="a-meta">'+whoTags(a)+'</span>':'')
+    +'</button>';
+}
+
+function render(){
+  const app=$('#app');
+  if(!state.role){app.innerHTML=loginView();return closeDlg()}
+  const boss=state.role==='boss';
+  if(!state.tab||(boss&&!['dash','cal'].includes(state.tab))||(!boss&&!['mine','cal'].includes(state.tab))) state.tab=boss?'dash':'mine';
+  const tabs=boss?[['dash','Dashboard'],['cal','Kalender']]:[['mine','Meine Termine'],['cal','Kalender']];
+  app.innerHTML=
+    '<header class="top"><div class="wrap">'
+    +'<img src="logo.png" alt="junited AUTOGLAS"><span class="demo-tag">Demo</span><span class="spacer"></span>'
+    +'<div class="who">Ansicht: <b>'+(boss?'Chef':esc(empName(state.role)))+'</b>'
+    +'<button class="btn small" data-logout>Rolle wechseln</button></div></div></header>'
+    +'<div class="wrap"><nav class="tabs">'+tabs.map(t=>'<button class="'+(state.tab===t[0]?'on':'')+'" data-tab="'+t[0]+'">'+t[1]+'</button>').join('')+'</nav>'
+    +(state.tab==='dash'?dashView():state.tab==='mine'?mineView():calView())
+    +'</div>'+demoBar();
+  if(ui.modal) openDlg(ui.modal); else closeDlg();
+}
+function demoBar(){
+  return '<div class="demobar"><div class="wrap"><small>Demo mit Beispieldaten. Änderungen bleiben nur in diesem Browser.</small>'
+   +'<button class="btn" data-shuffle>🎲 Termine neu mischen</button><button class="btn" data-reset>↺ Zurücksetzen</button></div></div>';
+}
+function loginView(){
+  return '<div class="wrap"><div class="login"><img src="logo.png" alt="junited AUTOGLAS">'
+   +'<h1>Einsatzplanung – Demo</h1><p>Wähle eine Ansicht. Ein Passwort ist in der Demo nicht nötig.</p>'
+   +'<div class="roles"><button class="role boss" data-role="boss">Chef<small>Dashboard &amp; Übersicht</small></button></div>'
+   +'<h3>oder als Mitarbeiter</h3>'
+   +'<div class="roles">'+EMP.map(e=>'<button class="role" data-role="'+e.id+'">'+esc(e.name)+'<small>Mitarbeiter</small></button>').join('')+'</div></div></div>'
+   +demoBar();
+}
+
+/* ---- Chef-Dashboard ---- */
+function dashView(){
+  const A=state.appts, cnt={red:0,yellow:0,ok:0,done:0};
+  A.forEach(a=>cnt[status(a)]++);
+  const f=state.filter;
+  const kp=(k,l)=>'<button class="kpi '+k+(f===k?' on':'')+'" data-filter="'+k+'"><div class="n">'+cnt[k]+'</div><div class="l">'+l+'</div></button>';
+  const list=A.filter(a=>f==='all'?status(a)!=='done':status(a)===f).sort(byTime);
+  const fl=[['all','Alle offenen'],['red','Dringend'],['yellow','Offen'],['ok','Besetzt'],['done','Erledigt']];
+  let rows='',lastDay='';
+  list.forEach(a=>{ if(a.date!==lastDay){lastDay=a.date;rows+='<div class="day-h">'+fmtLong(a.date)+'</div>'} rows+=bossRow(a)});
+  if(!list.length) rows='<div class="hint">Keine Termine in dieser Ansicht.</div>';
+  return '<div class="grid kpis">'+kp('red','Dringend (≤ 2 Tage, nicht besetzt)')+kp('yellow','Offen (noch keine volle Zusage)')+kp('ok','Besetzt')+kp('done','Erledigt')+'</div>'
+   +'<div class="grid cols" style="margin-top:14px">'
+   +'<section class="card"><h2>Auslastung &amp; Einsatzorte</h2>'+loadView()+'</section>'
+   +'<section class="card"><h2>Termine</h2><div class="filters">'+fl.map(x=>'<button class="chip-f'+(f===x[0]?' on':'')+'" data-filter="'+x[0]+'">'+x[1]+'</button>').join('')+'</div>'+rows+'</section>'
+   +'</div>';
+}
+function bossRow(a){
+  const st=status(a), can=a.assigned.length<a.persons&&!a.done;
+  const opts=EMP.filter(e=>!a.assigned.includes(e.id)).map(e=>'<option value="'+e.id+'"'+(busy(state.appts,e.id,a)?' disabled':'')+'>'+esc(e.name)+(busy(state.appts,e.id,a)?' (belegt)':'')+'</option>').join('');
+  return '<div class="appt '+st+'" data-open="'+a.id+'" role="button" tabindex="0">'
+   +'<span class="a-time">'+a.time+'</span>'
+   +'<span class="a-main"><span class="a-title">'+esc(a.customer)+'</span><br><span class="a-sub">'+esc(a.address)+' · '+esc(a.vehicle)+'</span></span>'
+   +'<span class="a-meta">'+tagsFor(a)+whoTags(a)+'</span>'
+   +(can?'<span class="row-ctl"><select data-assign="'+a.id+'" aria-label="Mitarbeiter zuweisen"><option value="">Mitarbeiter zuweisen …</option>'+opts+'</select></span>':'')
+   +'</div>';
+}
+function loadView(){
+  const now=today0();
+  const data=EMP.map(e=>{
+    const mine=state.appts.filter(a=>a.assigned.includes(e.id)).sort(byTime);
+    const wk=mine.filter(a=>!a.done&&dayDiff(a.date)<7);
+    const todayA=mine.filter(a=>a.date===iso(now));
+    return {e,wk:wk.length,todayA,next:mine.find(a=>!a.done)};
+  });
+  const max=Math.max(8,...data.map(d=>d.wk));
+  return data.map(d=>{
+    let now='';
+    if(d.todayA.length) now='Heute: '+d.todayA.map(a=>'<b>'+a.time+'</b> '+esc(a.customer)+', '+esc(a.city)+(a.done?' ✓':'')).join(' · ');
+    else if(d.next) now='Nächster Einsatz: <b>'+fmtShort(d.next.date)+' '+d.next.time+'</b> '+esc(d.next.customer)+', '+esc(d.next.city);
+    else now='Aktuell keine Termine';
+    return '<div class="emp"><div class="emp-h">'+esc(d.e.name)+'<span>'+d.wk+' Termine in 7 Tagen</span></div>'
+      +'<div class="bar"><i style="width:'+Math.round(d.wk/max*100)+'%"></i></div><div class="emp-now">'+now+'</div></div>';
+  }).join('');
+}
+
+/* ---- Mitarbeiter: Meine Termine ---- */
+function mineView(){
+  const me=state.role;
+  const mine=state.appts.filter(a=>a.assigned.includes(me)).sort(byTime);
+  const open=state.appts.filter(a=>!a.done&&a.assigned.length<a.persons&&!a.assigned.includes(me)).length;
+  let h='<div class="banner"><span>'+open+' Termine suchen noch Verstärkung.</span><button class="btn primary" data-tab="cal">Termine übernehmen</button></div>';
+  if(!mine.length) return h+'<div class="hint">Du hast noch keine Termine übernommen.<br>Öffne den Kalender und tippe auf einen Termin.</div>';
+  let last='';
+  mine.forEach(a=>{
+    if(a.date!==last){last=a.date;h+='<div class="day-h">'+fmtLong(a.date)+'</div>'}
+    const partner=a.persons===2?a.assigned.filter(e=>e!==me).map(empName)[0]:null;
+    const warn=a.persons===2&&!partner&&!a.done;
+    const full=a.assigned.length>=a.persons;
+    const map=a.type==='site'?' <a target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(a.address)+'">Route</a>':'';
+    h+='<div class="todo'+(a.done?' done':warn?' warn':'')+'">'
+      +'<span class="a-time">'+a.time+'</span>'
+      +'<div class="a-main"><div class="a-title">'+esc(a.customer)+'</div>'
+      +'<div class="a-sub">'+esc(a.address)+map+'</div>'
+      +'<div class="a-sub">'+esc(a.vehicle)+' · '+esc(a.plate)+' · '+esc(a.service)+'</div></div>'
+      +'<div class="a-meta">'+tagsFor(a)
+      +(a.persons===2?'<span class="tag who">'+(partner?'Mit '+esc(partner):'Partner fehlt noch')+'</span>':'')+'</div>'
+      +'<div class="row-ctl"><label class="check"><input type="checkbox" data-done="'+a.id+'"'+(a.done?' checked':'')+(full?'':' disabled')+'> Erledigt</label>'
+      +(a.done?'':'<button class="btn small danger" data-release="'+a.id+'">Zusage zurückziehen</button>')
+      +(full||a.done?'':'<span class="a-sub">Erledigt-Haken, sobald der Termin voll besetzt ist.</span>')+'</div></div>';
+  });
+  return h;
+}
+
+/* ---- Kalender ---- */
+function weekStart(off){const d=today0();const w=(d.getDay()+6)%7;d.setDate(d.getDate()-w+off*7);return d}
+function calView(){
+  const ws=weekStart(state.week), days=[];
+  for(let i=0;i<6;i++){const d=new Date(ws);d.setDate(d.getDate()+i);days.push(d)}
+  const end=days[5];
+  const title='Woche '+pad(ws.getDate())+'.'+pad(ws.getMonth()+1)+'. – '+pad(end.getDate())+'.'+pad(end.getMonth()+1)+'.'+end.getFullYear();
+  let h='<div class="cal-nav"><button class="btn small" data-week="-1"'+(state.week<=0?' disabled':'')+'>‹ Zurück</button>'
+    +'<h2>'+title+'</h2>'
+    +'<button class="btn small" data-week="0">Heute</button>'
+    +'<button class="btn small" data-week="1"'+(state.week>=2?' disabled':'')+'>Weiter ›</button></div>'
+    +'<div class="week">';
+  days.forEach(d=>{
+    const s=iso(d), n=dayDiff(s);
+    const items=state.appts.filter(a=>a.date===s).sort(byTime);
+    h+='<div class="col'+(n===0?' today':'')+(n<0?' past':'')+'"><div class="col-h">'+WD[d.getDay()]+'<span>'+pad(d.getDate())+'.'+pad(d.getMonth()+1)+'.'+(n===0?' · heute':'')+'</span></div>'
+      +(items.length?items.map(a=>apptCard(a,'col')).join(''):'<div class="empty">Keine Termine</div>')+'</div>';
+  });
+  h+='</div><div class="legend">'
+    +'<span><i style="background:var(--s-red)"></i>Dringend: in ≤ 2 Tagen, nicht besetzt</span>'
+    +'<span><i style="background:var(--s-yellow)"></i>Offen</span>'
+    +'<span><i style="background:var(--s-green)"></i>Besetzt</span>'
+    +'<span><i style="background:var(--s-grey)"></i>Erledigt</span></div>';
+  return h;
+}
+
+/* ---- Detail-Dialog ---- */
+function dlgHtml(a){
+  const st=status(a), boss=state.role==='boss', me=state.role;
+  const iAm=a.assigned.includes(me), full=a.assigned.length>=a.persons;
+  let ctl='';
+  if(boss){
+    const opts=EMP.filter(e=>!a.assigned.includes(e.id)).map(e=>'<option value="'+e.id+'"'+(busy(state.appts,e.id,a)?' disabled':'')+'>'+esc(e.name)+(busy(state.appts,e.id,a)?' (belegt)':'')+'</option>').join('');
+    ctl+=a.assigned.map(e=>'<span class="tag who">'+esc(empName(e))+(a.done?'':' <button class="x" data-release-emp="'+a.id+':'+e+'" aria-label="Entfernen">×</button>')+'</span>').join('');
+    if(!full&&!a.done) ctl+='<select data-assign="'+a.id+'"><option value="">Mitarbeiter zuweisen …</option>'+opts+'</select>';
+  } else {
+    if(a.done) ctl='<span class="a-sub">Dieser Termin ist erledigt.</span>';
+    else if(iAm) ctl='<button class="btn danger" data-release="'+a.id+'">Zusage zurückziehen</button>'+(full?'<label class="check"><input type="checkbox" data-done="'+a.id+'"> Erledigt</label>':'');
+    else if(!full) ctl='<button class="btn primary" data-take="'+a.id+'">Termin übernehmen</button>';
+    else ctl='<span class="a-sub">Der Termin ist bereits voll besetzt.</span>';
+  }
+  const warn=(!a.done&&!full)?'<div class="warnbox'+(st==='red'?' red':'')+'"><b>'+missingText(a)+'.</b> '+(st==='red'?'Der Termin ist in '+(dayDiff(a.date)===0?'weniger als 24 Stunden':dayDiff(a.date)+' Tag(en)')+' fällig.':'')+'</div>':'';
+  return '<div class="m"><button class="btn small m-close" data-close>Schließen</button>'
+   +'<h3>'+esc(a.customer)+'</h3><div class="a-sub">'+fmtLong(a.date)+' · '+a.time+' Uhr</div>'
+   +'<div class="a-meta" style="margin-top:8px">'+tagsFor(a)+'</div>'
+   +'<dl><dt>Ort</dt><dd>'+esc(a.address)+'</dd>'
+   +'<dt>Fahrzeug</dt><dd>'+esc(a.vehicle)+' ('+esc(a.plate)+')</dd>'
+   +'<dt>Auftrag</dt><dd>'+esc(a.service)+'</dd>'
+   +'<dt>Benötigt</dt><dd>'+a.persons+(a.persons===2?' Personen (laut Fahrzeugtyp)':' Person')+'</dd>'
+   +'<dt>Zusagen</dt><dd>'+(a.assigned.length?a.assigned.map(empName).join(', '):'noch keine')+'</dd></dl>'
+   +warn+'<div class="ctl">'+ctl+'</div></div>';
+}
+function openDlg(id){const a=get(id);if(!a){ui.modal=null;return closeDlg()}const d=$('#dlg');d.innerHTML=dlgHtml(a);if(!d.open)d.showModal()}
+function closeDlg(){const d=$('#dlg');if(d.open)d.close()}
+
+/* ============ Events ============ */
+document.addEventListener('click',e=>{
+  const t=e.target.closest('[data-role],[data-logout],[data-tab],[data-filter],[data-week],[data-take],[data-release],[data-release-emp],[data-done],[data-shuffle],[data-reset],[data-close],[data-open]');
+  if(!t) return;
+  const ds=t.dataset;
+  if('role' in ds){state.role=ds.role;state.tab=null;save();render();window.scrollTo(0,0)}
+  else if('logout' in ds){state.role=null;ui.modal=null;save();render()}
+  else if('tab' in ds){state.tab=ds.tab;save();render()}
+  else if('filter' in ds){state.filter=ds.filter;save();render()}
+  else if('week' in ds){const v=+ds.week;state.week=v===0?0:Math.max(0,Math.min(2,state.week+v));save();render()}
+  else if('take' in ds){ui.modal=null;act_take(+ds.take,state.role);toast('Termin übernommen. Du findest ihn unter „Meine Termine“.')}
+  else if('releaseEmp' in ds){const [id,emp]=ds.releaseEmp.split(':');act_release(+id,emp)}
+  else if('release' in ds){ui.modal=null;act_release(+ds.release,state.role);toast('Zusage zurückgezogen.')}
+  else if('done' in ds){return} // per change-Event
+  else if('shuffle' in ds){act_shuffle()}
+  else if('reset' in ds){act_reset()}
+  else if('close' in ds){ui.modal=null;closeDlg()}
+  else if('open' in ds){if(e.target.closest('select,button.x'))return;ui.modal=+ds.open;render()}
+});
+document.addEventListener('change',e=>{
+  const t=e.target;
+  if(t.matches('[data-assign]')){const v=t.value;if(v)act_take(+t.dataset.assign,v)}
+  else if(t.matches('[data-done]')){act_done(+t.dataset.done,t.checked)}
+});
+document.addEventListener('keydown',e=>{
+  if((e.key==='Enter'||e.key===' ')&&e.target.matches('div.appt[data-open]')){e.preventDefault();ui.modal=+e.target.dataset.open;render()}
+});
+$('#dlg').addEventListener('close',()=>{ui.modal=null});
+$('#dlg').addEventListener('click',e=>{if(e.target.id==='dlg'){ui.modal=null;closeDlg()}});
+
+init();
+render();
+</script>
+</body>
+</html>
